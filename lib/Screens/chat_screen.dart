@@ -1,5 +1,9 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/constants.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class ChatScreen extends StatefulWidget {
 
@@ -10,6 +14,29 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+
+  final _auth=FirebaseAuth.instance;
+
+  final _firestore = FirebaseFirestore.instance;
+
+  String message ="";
+
+  void getUser() async{
+
+    User? user = await _auth.currentUser;
+    if(user!=null)
+      {
+        print(user.uid);
+      }
+  }
+
+  @override
+  void initState()
+  {
+    super.initState();
+    getUser();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,8 +45,12 @@ class _ChatScreenState extends State<ChatScreen> {
         actions: <Widget>[
           IconButton(
               icon: Icon(Icons.close),
-              onPressed: () {
+              onPressed: () async{
                 //Implement logout functionality
+
+                await _auth.signOut().whenComplete(() => Navigator.pop(context));
+
+
               }),
         ],
         title: Text('⚡️Chat'),
@@ -39,18 +70,29 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: TextField(
                       onChanged: (value) {
                         //Do something with the user input.
+                        setState((){
+                          message=value;
+                        });
+
                       },
                       decoration: kMessageTextFieldDecoration,
                     ),
                   ),
                   RawMaterialButton(
-                    onPressed: () {
+                    onPressed: (){
                       //Implement send functionality.
+
+                      _firestore.collection('message').add({
+                        "text": message,
+                        "sender": _auth.currentUser?.email
+                      }).whenComplete(() => print("Sent Message!"));
+
                     },
-                    child: Text(
-                      'Send',
-                      style: kSendButtonTextStyle,
-                    ),
+                    child: Icon(Icons.send),
+                    // child: Text(
+                    //   'Send',
+                    //   style: kSendButtonTextStyle,
+                    // ),
                   ),
                 ],
               ),
