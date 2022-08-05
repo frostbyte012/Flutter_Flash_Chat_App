@@ -30,6 +30,17 @@ class _ChatScreenState extends State<ChatScreen> {
       }
   }
 
+  void messageFuture() async
+  {
+    await for(var snapshot in _firestore.collection("message").snapshots()) {
+
+          for(var message in snapshot.docs)
+            {
+              print(message.data());
+            }
+    }
+  }
+
   @override
   void initState()
   {
@@ -48,7 +59,8 @@ class _ChatScreenState extends State<ChatScreen> {
               onPressed: () async{
                 //Implement logout functionality
 
-                await _auth.signOut().whenComplete(() => Navigator.pop(context));
+                // await _auth.signOut().whenComplete(() => Navigator.pop(context));
+                messageFuture();
 
 
               }),
